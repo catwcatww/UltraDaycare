@@ -353,12 +353,12 @@ public class Plot {
     egg.setUuid(UUID.randomUUID());
     Pokemon firstEvolution = female;
     EggBuilder eggBuilder = EggBuilder.builder()
-        .firstEvolution(firstEvolution)
-        .egg(egg)
-        .female(female)
-        .male(male)
-        .player(player)
-        .build();
+      .firstEvolution(firstEvolution)
+      .egg(egg)
+      .female(female)
+      .male(male)
+      .player(player)
+      .build();
     for (Mechanics mechanic : UltraDaycare.mechanics) {
       try {
         if (mechanic.isActive())
@@ -367,6 +367,11 @@ public class Plot {
         UltraDaycare.LOGGER.error("Error applying mechanic " + mechanic.getClass().getSimpleName() + ": ", e);
       }
     }
+
+    if (!male.getTradeable() || !female.getTradeable()) {
+      egg.setTradeable(false);
+    }
+
     return egg;
   }
 
