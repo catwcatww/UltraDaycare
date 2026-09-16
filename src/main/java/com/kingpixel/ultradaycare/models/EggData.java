@@ -195,13 +195,18 @@ public class EggData {
       if (builder.getPokemon() != null && builder.getEgg() != null) {
         builder.getPokemon().setLevel(level);
         UltraDaycare.fixBreedable(builder.getPokemon());
+
+        if (!egg.getTradeable()) {
+          builder.getPokemon().setTradeable(false);
+        }
+
         CobbleUtils.server.execute(() -> {
           party.remove(egg);
           party.add(builder.getPokemon());
           UUID uuid = player.getUuid();
           builder.getPokemon().setOriginalTrainer(uuid);
-           CobblemonEvents.HATCH_EGG_POST.emit(new Post(
-             player, builder.getPokemon()));
+          CobblemonEvents.HATCH_EGG_POST.emit(new Post(
+            player, builder.getPokemon()));
           HatchEggEvent.HATCH_EGG_EVENT.emit(player, builder.getPokemon());
         });
       }
