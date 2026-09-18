@@ -161,7 +161,9 @@ public class DayCareAbility extends Mechanics {
 
     boolean isHA = shouldInheritHA(male, female, maleHA, femaleHA, maleIsDitto, femaleIsDitto);
     builder.getEgg().getPersistentData().putBoolean(TAG_HA, isHA);
-
+    if(!male.getTradeable() || !female.getTradeable()){
+      isHA = false;
+    }
     String chosenAbilityName = determineAbilityName(male, female, femaleIsDitto, builder.getFirstEvolution(), isHA);
     if (!chosenAbilityName.isEmpty()) {
       builder.getEgg().getPersistentData().putString(TAG, chosenAbilityName);

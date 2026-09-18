@@ -31,6 +31,7 @@ import com.kingpixel.ultradaycare.mechanics.Mechanics;
 import com.kingpixel.ultradaycare.mechanics.pokemon.*;
 import com.kingpixel.ultradaycare.models.Plot;
 import com.kingpixel.ultradaycare.models.User;
+import com.kingpixel.ultradaycare.placeholders.DaycarePlaceholders;
 import com.kingpixel.ultradaycare.properties.BreedablePropertyType;
 import com.kingpixel.ultradaycare.tasks.TaskDayCare;
 import com.kingpixel.ultradaycare.util.MigrationService;
@@ -455,6 +456,7 @@ public class UltraDaycare implements ModInitializer {
     load();
     events();
     tasks();
+    DaycarePlaceholders.register();
   }
 
   public record UserInfo(String country, String countryCode, String language) {
