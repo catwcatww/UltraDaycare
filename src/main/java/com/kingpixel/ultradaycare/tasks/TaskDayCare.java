@@ -113,6 +113,9 @@ public class TaskDayCare implements Runnable {
    * @param player        the player entity
    */
   private void updateEggSteps(PlayerPartyStore party, double deltaMovement, ServerPlayerEntity player) {
+    if (UltraDaycare.config.getIncubators().isEnabled() && UltraDaycare.config.getIncubators().isRestrictEggsInParty()) {
+      return;
+    }
     if (PokeMMODaycareMode.ID.equalsIgnoreCase(UltraDaycare.config.getDaycareMode())
         && UltraDaycare.config.getPokemmoEggHatchMethod() == EggHatchMethod.TIME) {
       return;
@@ -125,6 +128,38 @@ public class TaskDayCare implements Runnable {
       if (pokemon != null && "egg".equals(pokemon.showdownId())) {
         EggData.steps(player, pokemon, finalMovement, user);
       }
+    }
+  }
+
+  private void updateIncubatorTime(User user) {
+    if (!UltraDaycare.config.getIncubators().isEnabled() || user == null || user.getIncubatorSlots() == null) {
+      return;
+    }
+    boolean changed = false;
+    for (com.kingpixel.ultradaycare.models.IncubatorSlot slot : user.getIncubatorSlots()) {
+      if (slot != null && slot.isIncubating()) {
+        slot.tick(0, 1000L);
+        changed = true;
+      }
+    }
+    if (changed) {
+      user.markDirty();
+    }
+  }
+
+  private void updateIncubatorSteps(User user, double deltaMovement) {
+    if (!UltraDaycare.config.getIncubators().isEnabled() || user == null || user.getIncubatorSlots() == null || deltaMovement <= 0) {
+      return;
+    }
+    boolean changed = false;
+    for (com.kingpixel.ultradaycare.models.IncubatorSlot slot : user.getIncubatorSlots()) {
+      if (slot != null && slot.isIncubating()) {
+        slot.tick(deltaMovement, 0);
+        changed = true;
+      }
+    }
+    if (changed) {
+      user.markDirty();
     }
   }
 
@@ -238,6 +273,7 @@ public class TaskDayCare implements Runnable {
           continue;
 
         updatePokeMMOEggs(player, user);
+        updateIncubatorTime(user);
 
         if (!isPlayerEligibleForStepUpdate(player))
           continue;
@@ -267,6 +303,7 @@ public class TaskDayCare implements Runnable {
           try {
             PlayerPartyStore party = Cobblemon.INSTANCE.getStorage().getParty(player);
             updateEggSteps(party, deltaMovement, player);
+            updateIncubatorSteps(user, deltaMovement);
             updatePlotsXp(player, deltaMovement);
             updatePlotsBreeding(player, user);
             sendMessage(player);

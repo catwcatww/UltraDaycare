@@ -31,6 +31,13 @@ public class CommandTree {
         CommandHatch.register(dispatcher, CommandManager.literal("hatch"));
         CommandBreed.register(dispatcher, CommandManager.literal("breed"));
 
+        if (UltraDaycare.config.getIncubators().isEnabled()) {
+          for (String incCmd : UltraDaycare.config.getIncubators().getCommands()) {
+            com.kingpixel.ultradaycare.commands.base.CommandIncubators.register(dispatcher, CommandManager.literal(incCmd));
+          }
+          com.kingpixel.ultradaycare.commands.base.CommandIncubators.register(dispatcher, CommandManager.literal("incubators"));
+        }
+
         CommandReload.register(dispatcher, base);
         CommandIncense.register(dispatcher, base);
         CommandBoosterSteps.register(dispatcher, base);

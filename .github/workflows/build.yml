@@ -65,8 +65,27 @@ jobs:
             flag {print}
           ')
           
+          # Fallback si el changelog extraído está vacío
+          if [ -z "$CHANGELOG_CONTENT" ]; then
+            CHANGELOG_CONTENT="Automated release for version $TAG"
+          fi
+          
+          CHANGELOG_FILE="build/changelog_${TAG}.txt"
+          CHANGELOG_LEN=${#CHANGELOG_CONTENT}
+          HAS_CHANGELOG_FILE=false
+          
+          # Discord embed description limit: 4096 caracteres
+          if [ "$CHANGELOG_LEN" -gt 3800 ]; then
+            printf "%s\n" "$CHANGELOG_CONTENT" > "$CHANGELOG_FILE"
+            TRUNCATED=$(printf "%s" "$CHANGELOG_CONTENT" | head -c 3500)
+            EMBED_DESC=$(printf "%s\n\n📄 **Full changelog attached as a file...**" "$TRUNCATED")
+            HAS_CHANGELOG_FILE=true
+          else
+            EMBED_DESC="$CHANGELOG_CONTENT"
+          fi
+          
           # Generar JSON embed correctamente escapado
-          JSON_PAYLOAD=$(jq -nc --arg tag "$TAG" --arg changelog "$CHANGELOG_CONTENT" \
+          JSON_PAYLOAD=$(jq -nc --arg tag "$TAG" --arg changelog "$EMBED_DESC" \
             '{content: "@everyone 🎉 New Release!", embeds:[{title:("Release "+$tag), description:$changelog, color:3066993}]}')
           
           echo "Embed JSON:"
@@ -77,9 +96,17 @@ jobs:
             -H "Content-Type: application/json" \
             -d "$JSON_PAYLOAD"
           
-          # 2️⃣ Enviar después el archivo como segundo mensaje
-          curl -s -X POST "$DISCORD_WEBHOOK_URL" \
-            -F "file=@${FILE}"
+          # 2️⃣ Si el changelog es extenso, enviar el archivo de texto
+          if [ "$HAS_CHANGELOG_FILE" = true ] && [ -f "$CHANGELOG_FILE" ]; then
+            curl -s -X POST "$DISCORD_WEBHOOK_URL" \
+              -F "file=@${CHANGELOG_FILE}"
+          fi
+          
+          # 3️⃣ Enviar después el archivo .jar
+          if [ -n "$FILE" ] && [ -f "$FILE" ]; then
+            curl -s -X POST "$DISCORD_WEBHOOK_URL" \
+              -F "file=@${FILE}"
+          fi
 
       - name: Publish to Modrinth
         run: |

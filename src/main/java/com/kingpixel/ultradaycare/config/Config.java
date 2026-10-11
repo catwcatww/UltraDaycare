@@ -107,6 +107,11 @@ public class Config {
   private DurationValue offlineBreedingInterval = DurationValue.parse("30m");
   private int maxOfflineEggsPerPlot = 1;
 
+  // ==========================================
+  // 7. Incubators Module
+  // ==========================================
+  private IncubatorConfig incubators = new IncubatorConfig();
+
   public Config() {
     this.dataBase.setDatabase("ultradaycare");
     this.blackList = PokemonBlackList.createBlackList();
@@ -138,6 +143,10 @@ public class Config {
     if (pokemmoEggHatchTimePermissions == null) {
       pokemmoEggHatchTimePermissions = new HashMap<>();
     }
+    if (incubators == null) {
+      incubators = new IncubatorConfig();
+    }
+    incubators.check();
   }
 
   public boolean hasOpenCooldown(ServerPlayerEntity player) {

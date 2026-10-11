@@ -261,6 +261,10 @@ public class UltraDaycare implements ModInitializer {
       for (int i = 0; i < size; i++) {
         hasPermission(server.getCommandSource(), Plot.plotPermission(i), 4);
       }
+      int incSize = config.getIncubators().getSlots().size();
+      for (int i = 0; i < incSize; i++) {
+        hasPermission(server.getCommandSource(), com.kingpixel.ultradaycare.config.IncubatorConfig.incubatorSlotPermission(i), 4);
+      }
       CustomPokemonProperty.Companion.register(BreedablePropertyType.getInstance());
     });
 
@@ -297,6 +301,17 @@ public class UltraDaycare implements ModInitializer {
 
         if (user.check(numPlots, player))
           update = true;
+
+        int numIncubators = 1;
+        int incSlots = UltraDaycare.config.getIncubators().getSlots().size();
+        for (int i = 0; i < incSlots; i++) {
+          if (hasPermission(player, com.kingpixel.ultradaycare.config.IncubatorConfig.incubatorSlotPermission(i), 4)) {
+            numIncubators = i + 1;
+          }
+        }
+        if (user.checkIncubators(numIncubators, player))
+          update = true;
+
         if (user.fix(player))
           update = true;
 
@@ -400,9 +415,32 @@ public class UltraDaycare implements ModInitializer {
   private static void fixPlayer(ServerPlayerEntity player) {
     var user = database.getUser(player);
     var party = Cobblemon.INSTANCE.getStorage().getParty(player);
+
+    if (config.getIncubators().isEnabled() && config.getIncubators().isRestrictEggsInParty()) {
+      List<Pokemon> partyEggs = new ArrayList<>();
+      for (Pokemon pokemon : party) {
+        if (pokemon != null && "egg".equalsIgnoreCase(pokemon.showdownId())) {
+          partyEggs.add(pokemon);
+        }
+      }
+      for (Pokemon egg : partyEggs) {
+        party.remove(egg);
+        if (user != null) {
+          user.getStoredEggs().add(egg);
+          user.markDirty();
+        }
+        com.kingpixel.cobbleutils.util.PlayerUtils.sendMessage(
+            player,
+            "&eEggs cannot be held directly in your party. Your egg was transferred to Incubator storage (/incubators).",
+            language.getPrefix(),
+            com.kingpixel.cobbleutils.util.TypeMessage.CHAT
+        );
+      }
+    }
+
     for (Pokemon pokemon : party) {
       fixBreedable(pokemon);
-      fixCountryInfo(pokemon, user.getCountry());
+      fixCountryInfo(pokemon, user != null ? user.getCountry() : null);
       if (config.isFixIlegalAbilities()) {
         PokemonUtils.isLegalAbility(pokemon);
       }
@@ -411,7 +449,7 @@ public class UltraDaycare implements ModInitializer {
     var pc = Cobblemon.INSTANCE.getStorage().getPC(player);
     for (Pokemon pokemon : pc) {
       fixBreedable(pokemon);
-      fixCountryInfo(pokemon, user.getCountry());
+      fixCountryInfo(pokemon, user != null ? user.getCountry() : null);
       if (config.isFixIlegalAbilities()) {
         PokemonUtils.isLegalAbility(pokemon);
       }
