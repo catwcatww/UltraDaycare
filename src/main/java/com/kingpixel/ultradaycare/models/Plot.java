@@ -152,10 +152,21 @@ public class Plot {
       return false;
     boolean removeEggs = false;
     List<Pokemon> remove = new ArrayList<>();
+    User user = UltraDaycare.database.getUser(player);
+    boolean restrict = UltraDaycare.config.getIncubators().isEnabled()
+        && UltraDaycare.config.getIncubators().isRestrictEggsInParty();
+
     for (Pokemon egg : eggs) {
       if (egg == null)
         continue;
-      CobbleUtils.server.execute(() -> Cobblemon.INSTANCE.getStorage().getParty(player).add(egg));
+      if (restrict && user != null) {
+        user.getStoredEggs().add(egg);
+        user.markDirty();
+        PlayerUtils.sendMessage(player, "&aEgg added to your Incubator storage! Use /incubators to manage it.",
+            UltraDaycare.language.getPrefix(), TypeMessage.CHAT);
+      } else {
+        CobbleUtils.server.execute(() -> Cobblemon.INSTANCE.getStorage().getParty(player).add(egg));
+      }
       remove.add(egg);
     }
     if (!remove.isEmpty()) {

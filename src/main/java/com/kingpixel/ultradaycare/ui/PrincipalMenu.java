@@ -39,6 +39,7 @@ public class PrincipalMenu {
   private ItemModel plotWithOutParents;
   private ItemModel blockedPlot;
   private ItemModel profileOptions;
+  private ItemModel incubatorsButton;
   private ItemModel close;
 
   public PrincipalMenu() {
@@ -86,6 +87,9 @@ public class PrincipalMenu {
     ), 0);
     this.profileOptions = new ItemModel(3, "item:1:minecraft:player_head", "&6Profile Options", List.of(
       "&7Click to open the profile options"
+    ), 0);
+    this.incubatorsButton = new ItemModel(21, "item:1:minecraft:furnace", "&6Incubators Hub", List.of(
+      "&7Click to open the Incubators menu."
     ), 0);
   }
 
@@ -165,6 +169,13 @@ public class PrincipalMenu {
       }
 
       profileOptions.applyTemplate(template, profileButton);
+
+      if (UltraDaycare.config.getIncubators().isEnabled()) {
+        incubatorsButton.applyTemplate(template, incubatorsButton.getButton(
+            action -> UltraDaycare.language.getIncubatorsMenu().open(player, user),
+            1, TimeUnit.SECONDS, 1
+        ));
+      }
 
       GooeyPage page = GooeyPage.builder()
         .template(template)

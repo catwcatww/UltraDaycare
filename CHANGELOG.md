@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.3.0] - 2026-10-12
+
+### Added
+
+- **Incubators Module**: Introduced a fully configurable egg incubation system that can complement or replace standard party-based egg hatching.
+- **Multiple Hatching Modes**: Added 4 flexible hatching conditions configurable per server: Time only, Steps only, Time OR Steps, and Time AND Steps.
+- **Caretaker Pokémon System**: Incubators can be assigned caretaker Pokémon with thermal abilities (`Flame Body`, `Magma Armor`, `Steam Engine`) to boost hatching speed.
+- **IV-Based Speed Scaling**: The higher the caretaker Pokémon's average IVs, the faster eggs hatch in the incubator (with configurable min/max speed multipliers).
+- **In-Game Economy & Daily Limits**: Players can purchase incubators with limited uses via the economy system, with configurable daily purchase limits tied to player permissions.
+- **Interactive Incubator GUIs**: Added dedicated menus (`/incubators`) for managing incubator slots, assigning caretakers, selecting eggs, and hatching ready Pokémon with visual progress bars.
+- **Party Egg Restrictions**: Server owners can restrict eggs from being held or hatched in the player's active party, automatically transferring daycare eggs to the player's incubator storage.
+
+### Changed
+
+- **License**: Changed project license from GPL-3.0 to CC-BY-NC-4.0 (Non-Commercial).
+- **Daycare Menu Integration**: Added a direct access button to the Incubators Hub from the main Daycare interface.
+
+## [1.2.8] - 2026-09-06
+
+### Changed
+
+- **Cobblemon 1.8.0 Compatibility**: Updated compatibility and dependencies to support Cobblemon 1.8.0 (Minecraft 1.21.1).
+
 ## [1.2.7]
 
 ### Added
@@ -164,3 +187,4 @@
 ---
 
 _UltraDaycare - The definitive breeding solution for Cobblemon._
+

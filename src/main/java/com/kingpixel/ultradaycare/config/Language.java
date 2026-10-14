@@ -57,6 +57,9 @@ public class Language {
   private PlotMenu plotMenu;
   private SelectPokemonMenu selectPokemonMenu;
   private ProfileMenu profileMenu;
+  private com.kingpixel.ultradaycare.ui.IncubatorsMenu incubatorsMenu;
+  private com.kingpixel.ultradaycare.ui.SelectCaretakerMenu selectCaretakerMenu;
+  private com.kingpixel.ultradaycare.ui.SelectEggMenu selectEggMenu;
 
   public Language() {
 
@@ -121,6 +124,9 @@ public class Language {
     this.plotMenu = new PlotMenu();
     this.selectPokemonMenu = new SelectPokemonMenu();
     this.profileMenu = new ProfileMenu();
+    this.incubatorsMenu = new com.kingpixel.ultradaycare.ui.IncubatorsMenu();
+    this.selectCaretakerMenu = new com.kingpixel.ultradaycare.ui.SelectCaretakerMenu();
+    this.selectEggMenu = new com.kingpixel.ultradaycare.ui.SelectEggMenu();
   }
 
   public void check() {
@@ -141,6 +147,15 @@ public class Language {
     }
     if (eggIvPreviewRangeFormat == null) {
       eggIvPreviewRangeFormat = "&7- %stat%: &e%min% - %max% &8(min: %min%, avg: %avg%, max: %max%)";
+    }
+    if (incubatorsMenu == null) {
+      incubatorsMenu = new com.kingpixel.ultradaycare.ui.IncubatorsMenu();
+    }
+    if (selectCaretakerMenu == null) {
+      selectCaretakerMenu = new com.kingpixel.ultradaycare.ui.SelectCaretakerMenu();
+    }
+    if (selectEggMenu == null) {
+      selectEggMenu = new com.kingpixel.ultradaycare.ui.SelectEggMenu();
     }
   }
 

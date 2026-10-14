@@ -44,6 +44,10 @@ public class User {
   private long cooldownBreed;
   private long lastActiveTime;
   private ArrayList<Plot> plots;
+  private ArrayList<IncubatorSlot> incubatorSlots;
+  private ArrayList<Pokemon> storedEggs;
+  private int dailyPurchasedIncubators;
+  private long lastDailyResetTimestamp;
   private transient AtomicBoolean dirty = new AtomicBoolean(false);
 
   public User() {
@@ -54,11 +58,15 @@ public class User {
     this.cooldownHatch = 0;
     this.cooldownBreed = 0;
     this.lastActiveTime = System.currentTimeMillis();
+    this.lastDailyResetTimestamp = System.currentTimeMillis();
+    this.dailyPurchasedIncubators = 0;
     var userInfoOptions = UltraDaycare.config.getUserInfoOptions();
     this.notifyBanPokemon = userInfoOptions.isNotifyBanPokemon();
     this.notifyCreateEgg = userInfoOptions.isNotifyCreateEgg();
     this.actionBar = userInfoOptions.isActionBar();
     this.plots = new ArrayList<>();
+    this.incubatorSlots = new ArrayList<>();
+    this.storedEggs = new ArrayList<>();
     this.dirty = new AtomicBoolean(false);
   }
 
@@ -181,6 +189,78 @@ public class User {
   }
 
 
+  public synchronized boolean checkIncubators(int numSlots, ServerPlayerEntity player) {
+    if (player == null) throw new IllegalArgumentException("The player cannot be null.");
+
+    boolean update = false;
+    checkDailyReset();
+
+    if (incubatorSlots == null) {
+      incubatorSlots = new ArrayList<>();
+      update = true;
+    }
+    if (storedEggs == null) {
+      storedEggs = new ArrayList<>();
+      update = true;
+    }
+
+    int currentSize = incubatorSlots.size();
+    if (currentSize < numSlots) {
+      for (int i = currentSize; i < numSlots; i++) {
+        incubatorSlots.add(new IncubatorSlot(i));
+      }
+      update = true;
+    } else if (currentSize > numSlots) {
+      var party = Cobblemon.INSTANCE.getStorage().getParty(player);
+      for (int i = currentSize - 1; i >= numSlots; i--) {
+        IncubatorSlot slot = incubatorSlots.remove(i);
+        if (slot == null) continue;
+        if (slot.getCaretaker() != null) {
+          returnToParty(player, party, slot.getCaretaker(), "caretaker");
+          slot.setCaretaker(null);
+        }
+        if (slot.getEgg() != null) {
+          storedEggs.add(slot.getEgg());
+          slot.setEgg(null);
+        }
+      }
+      update = true;
+    }
+    return update;
+  }
+
+  public synchronized void checkDailyReset() {
+    long now = System.currentTimeMillis();
+    // 24 hours in millis = 86,400,000
+    if (now - lastDailyResetTimestamp >= 86_400_000L) {
+      dailyPurchasedIncubators = 0;
+      lastDailyResetTimestamp = now;
+      markDirty();
+    }
+  }
+
+  public synchronized int getDailyLimit(ServerPlayerEntity player) {
+    int limit = 1;
+    for (Map.Entry<String, Integer> entry : UltraDaycare.config.getIncubators().getDailyLimits().entrySet()) {
+      if (limit > entry.getValue()) continue;
+      if (entry.getKey().isEmpty() || UltraDaycare.hasPermission(player, entry.getKey(), 4)) {
+        limit = entry.getValue();
+      }
+    }
+    return limit;
+  }
+
+  public synchronized boolean canBuyIncubator(ServerPlayerEntity player) {
+    checkDailyReset();
+    return dailyPurchasedIncubators < getDailyLimit(player);
+  }
+
+  public synchronized void recordIncubatorPurchase() {
+    checkDailyReset();
+    dailyPurchasedIncubators++;
+    markDirty();
+  }
+
   public synchronized boolean fix(ServerPlayerEntity player) {
     boolean update = false;
     if (plots == null) {
@@ -188,6 +268,16 @@ public class User {
       plots = new ArrayList<>();
       update = true;
     }
+    if (incubatorSlots == null) {
+      incubatorSlots = new ArrayList<>();
+      update = true;
+    }
+    if (storedEggs == null) {
+      storedEggs = new ArrayList<>();
+      update = true;
+    }
+    checkDailyReset();
+
     for (Plot plot : plots) {
       var eggsIterator = plot.getEggs().iterator();
       while (eggsIterator.hasNext()) {
